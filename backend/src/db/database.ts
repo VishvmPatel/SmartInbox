@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import fs from 'fs';
 import { initMockInbox } from '../data/mockInbox';
 import { initDefaultPrompts } from '../data/defaultPrompts';
 
@@ -13,7 +14,13 @@ export function getDatabase(): Database.Database {
 }
 
 export async function initDatabase(): Promise<void> {
-  const dbPath = path.join(__dirname, '../../data/email_agent.db');
+  // Ensure data directory exists
+  const dataDir = path.join(__dirname, '../../data');
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  
+  const dbPath = path.join(dataDir, 'email_agent.db');
   db = new Database(dbPath);
   
   // Enable foreign keys
