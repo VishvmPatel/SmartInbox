@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { getDatabase } from '../db/database';
 import { callLLM } from '../services/llmService';
 
 export const chatRoutes = Router();
 
 // Get chat messages for an email (or general chat)
-chatRoutes.get('/:emailId?', (req, res) => {
+chatRoutes.get('/:emailId?', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const emailId = req.params.emailId || null;
@@ -24,7 +24,7 @@ chatRoutes.get('/:emailId?', (req, res) => {
 });
 
 // Send a message in the Email Agent chat
-chatRoutes.post('/:emailId?', async (req, res) => {
+chatRoutes.post('/:emailId?', async (req: Request, res: Response) => {
   try {
     const { message } = req.body;
     const emailId = req.params.emailId || null;
@@ -77,7 +77,7 @@ chatRoutes.post('/:emailId?', async (req, res) => {
 });
 
 // Clear chat history
-chatRoutes.delete('/:emailId?', (req, res) => {
+chatRoutes.delete('/:emailId?', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const emailId = req.params.emailId || null;
@@ -93,6 +93,8 @@ chatRoutes.delete('/:emailId?', (req, res) => {
     res.status(500).json({ error: 'Failed to clear chat history' });
   }
 });
+
+
 
 
 

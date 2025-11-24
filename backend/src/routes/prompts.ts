@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { getDatabase } from '../db/database';
 
 export const promptRoutes = Router();
 
 // Get all prompt templates
-promptRoutes.get('/', (req, res) => {
+promptRoutes.get('/', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const prompts = db.prepare('SELECT * FROM prompt_templates ORDER BY name').all();
@@ -15,7 +15,7 @@ promptRoutes.get('/', (req, res) => {
 });
 
 // Get single prompt template
-promptRoutes.get('/:id', (req, res) => {
+promptRoutes.get('/:id', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const prompt = db.prepare('SELECT * FROM prompt_templates WHERE id = ?').get(req.params.id);
@@ -29,7 +29,7 @@ promptRoutes.get('/:id', (req, res) => {
 });
 
 // Create new prompt template
-promptRoutes.post('/', (req, res) => {
+promptRoutes.post('/', (req: Request, res: Response) => {
   try {
     const { name, description, template, type } = req.body;
     
@@ -54,7 +54,7 @@ promptRoutes.post('/', (req, res) => {
 });
 
 // Update prompt template
-promptRoutes.put('/:id', (req, res) => {
+promptRoutes.put('/:id', (req: Request, res: Response) => {
   try {
     const { name, description, template, type } = req.body;
     const db = getDatabase();
@@ -87,7 +87,7 @@ promptRoutes.put('/:id', (req, res) => {
 });
 
 // Delete prompt template
-promptRoutes.delete('/:id', (req, res) => {
+promptRoutes.delete('/:id', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const result = db.prepare('DELETE FROM prompt_templates WHERE id = ?').run(req.params.id);
@@ -101,6 +101,8 @@ promptRoutes.delete('/:id', (req, res) => {
     res.status(500).json({ error: 'Failed to delete prompt template' });
   }
 });
+
+
 
 
 

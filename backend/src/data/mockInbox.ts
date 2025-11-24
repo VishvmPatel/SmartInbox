@@ -172,10 +172,120 @@ export function initMockInbox(): void {
       read: 0,
       category: null,
       priority: null
+    },
+    {
+      subject: "Job Offer: Software Engineer Position",
+      from_email: "hr@techcorp.com",
+      from_name: "HR Department",
+      to_email: "you@example.com",
+      body: "Congratulations!\n\nWe are pleased to offer you the Software Engineer position at TechCorp. The offer includes a competitive salary, health benefits, and stock options.\n\nPlease let us know your decision by next Friday.\n\nWe're excited to have you join our team!\n\nBest regards,\nHR Department",
+      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      read: 0,
+      category: null,
+      priority: null
+    },
+    {
+      subject: "Password Reset Request",
+      from_email: "noreply@account.com",
+      from_name: "Account Security",
+      to_email: "you@example.com",
+      body: "We received a request to reset your password.\n\nIf you made this request, click the link below to reset your password:\n\nhttps://account.com/reset?token=abc123\n\nThis link will expire in 24 hours.\n\nIf you didn't request this, please ignore this email.\n\nAccount Security Team",
+      date: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+      read: 0,
+      category: null,
+      priority: null
+    },
+    {
+      subject: "You're Invited: Company Holiday Party",
+      from_email: "events@company.com",
+      from_name: "Events Committee",
+      to_email: "you@example.com",
+      body: "You're invited to our annual holiday party!\n\nDate: December 20, 2024\nTime: 6:00 PM - 11:00 PM\nLocation: Grand Ballroom, Downtown Hotel\n\nPlease RSVP by December 10th. We can't wait to celebrate with you!\n\nEvents Committee",
+      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      read: 0,
+      category: null,
+      priority: null
+    },
+    {
+      subject: "Thank You for Your Donation",
+      from_email: "donations@charity.org",
+      from_name: "Charity Foundation",
+      to_email: "you@example.com",
+      body: "Dear Supporter,\n\nThank you so much for your generous donation of $100. Your contribution helps us continue our mission to support those in need.\n\nWe truly appreciate your kindness and support.\n\nWith gratitude,\nCharity Foundation Team",
+      date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+      read: 1,
+      category: null,
+      priority: null
+    },
+    {
+      subject: "Collaboration Request: Design Project",
+      from_email: "partner@designco.com",
+      from_name: "Sarah Williams",
+      to_email: "you@example.com",
+      body: "Hi,\n\nI'm reaching out to see if you'd be interested in collaborating on a new design project. We're looking for someone with your expertise to help us create something amazing.\n\nWould you be available for a quick call this week to discuss?\n\nLooking forward to hearing from you!\n\nSarah",
+      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      read: 0,
+      category: null,
+      priority: null
+    },
+    {
+      subject: "Deadline Reminder: Project Proposal Due Tomorrow",
+      from_email: "project@company.com",
+      from_name: "Project Manager",
+      to_email: "you@example.com",
+      body: "Friendly reminder: Your project proposal is due tomorrow by 5 PM.\n\nPlease make sure to submit it through the portal. If you need an extension, let me know as soon as possible.\n\nThanks,\nProject Manager",
+      date: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
+      read: 0,
+      category: null,
+      priority: null
+    },
+    {
+      subject: "Welcome to Our Platform!",
+      from_email: "welcome@platform.com",
+      from_name: "Platform Team",
+      to_email: "you@example.com",
+      body: "Welcome to our platform!\n\nWe're thrilled to have you join our community. Here are some resources to get you started:\n\n- Getting Started Guide\n- Video Tutorials\n- Community Forum\n\nIf you have any questions, don't hesitate to reach out!\n\nHappy exploring!\n\nPlatform Team",
+      date: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+      read: 1,
+      category: null,
+      priority: null
+    },
+    {
+      subject: "Subscription Renewal Notice",
+      from_email: "billing@service.com",
+      from_name: "Billing Team",
+      to_email: "you@example.com",
+      body: "Your subscription is set to renew on December 31, 2024.\n\nCurrent plan: Premium Monthly\nRenewal amount: $29.99\n\nYour payment method on file will be charged automatically. If you'd like to update your payment method or cancel, please do so before the renewal date.\n\nThank you for being a valued customer!\n\nBilling Team",
+      date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+      read: 0,
+      category: null,
+      priority: null
+    },
+    {
+      subject: "Support Ticket #12345 - Resolved",
+      from_email: "support@service.com",
+      from_name: "Support Team",
+      to_email: "you@example.com",
+      body: "Hello,\n\nYour support ticket #12345 has been resolved. The issue with your account access has been fixed.\n\nIf you're still experiencing any problems, please reply to this email and we'll be happy to help.\n\nThank you for your patience!\n\nSupport Team",
+      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      read: 1,
+      category: null,
+      priority: null
+    },
+    {
+      subject: "New Follower on Social Platform",
+      from_email: "notifications@social.com",
+      from_name: "Social Platform",
+      to_email: "you@example.com",
+      body: "John Smith started following you!\n\nView their profile: https://social.com/johnsmith\n\nYou can manage your notification preferences in your account settings.\n\nSocial Platform Team",
+      date: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(),
+      read: 0,
+      category: null,
+      priority: null
     }
   ];
   
-  const insertMany = db.transaction((emails) => {
+  const insertMany = db.transaction((emails: typeof emails) => {
     for (const email of emails) {
       insert.run(
         email.subject,
@@ -194,6 +304,7 @@ export function initMockInbox(): void {
   insertMany(emails);
   console.log(`✅ Initialized ${emails.length} mock emails`);
 }
+
 
 
 

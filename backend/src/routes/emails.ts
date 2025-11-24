@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { getDatabase } from '../db/database';
 import { callLLM } from '../services/llmService';
 
 export const emailRoutes = Router();
 
 // Get all emails
-emailRoutes.get('/', (req, res) => {
+emailRoutes.get('/', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const emails = db.prepare('SELECT * FROM emails ORDER BY date DESC').all();
@@ -16,7 +16,7 @@ emailRoutes.get('/', (req, res) => {
 });
 
 // Get single email
-emailRoutes.get('/:id', (req, res) => {
+emailRoutes.get('/:id', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const email = db.prepare('SELECT * FROM emails WHERE id = ?').get(req.params.id);
@@ -30,7 +30,7 @@ emailRoutes.get('/:id', (req, res) => {
 });
 
 // Mark email as read
-emailRoutes.patch('/:id/read', (req, res) => {
+emailRoutes.patch('/:id/read', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const result = db.prepare('UPDATE emails SET read = 1 WHERE id = ?').run(req.params.id);
@@ -44,7 +44,7 @@ emailRoutes.patch('/:id/read', (req, res) => {
 });
 
 // Categorize email
-emailRoutes.post('/:id/categorize', async (req, res) => {
+emailRoutes.post('/:id/categorize', async (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const email = db.prepare('SELECT * FROM emails WHERE id = ?').get(req.params.id) as any;
@@ -80,7 +80,7 @@ emailRoutes.post('/:id/categorize', async (req, res) => {
 });
 
 // Extract actions from email
-emailRoutes.post('/:id/actions', async (req, res) => {
+emailRoutes.post('/:id/actions', async (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const email = db.prepare('SELECT * FROM emails WHERE id = ?').get(req.params.id) as any;
@@ -109,7 +109,7 @@ emailRoutes.post('/:id/actions', async (req, res) => {
 });
 
 // Generate reply draft
-emailRoutes.post('/:id/reply', async (req, res) => {
+emailRoutes.post('/:id/reply', async (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const email = db.prepare('SELECT * FROM emails WHERE id = ?').get(req.params.id) as any;
@@ -138,7 +138,7 @@ emailRoutes.post('/:id/reply', async (req, res) => {
 });
 
 // Summarize email
-emailRoutes.post('/:id/summarize', async (req, res) => {
+emailRoutes.post('/:id/summarize', async (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const email = db.prepare('SELECT * FROM emails WHERE id = ?').get(req.params.id) as any;
@@ -167,7 +167,7 @@ emailRoutes.post('/:id/summarize', async (req, res) => {
 });
 
 // Assess priority
-emailRoutes.post('/:id/priority', async (req, res) => {
+emailRoutes.post('/:id/priority', async (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const email = db.prepare('SELECT * FROM emails WHERE id = ?').get(req.params.id) as any;

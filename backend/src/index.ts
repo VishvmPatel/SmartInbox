@@ -12,7 +12,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+// CORS configuration for production
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*', // Allow all in dev, specific URL in production
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
@@ -22,7 +28,7 @@ app.use('/api/drafts', draftRoutes);
 app.use('/api/chat', chatRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', message: 'Email Agent API is running' });
 });
 

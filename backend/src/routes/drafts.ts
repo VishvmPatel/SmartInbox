@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { getDatabase } from '../db/database';
 
 export const draftRoutes = Router();
 
 // Get all drafts
-draftRoutes.get('/', (req, res) => {
+draftRoutes.get('/', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const drafts = db.prepare('SELECT * FROM drafts ORDER BY updated_at DESC').all();
@@ -15,7 +15,7 @@ draftRoutes.get('/', (req, res) => {
 });
 
 // Get single draft
-draftRoutes.get('/:id', (req, res) => {
+draftRoutes.get('/:id', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const draft = db.prepare('SELECT * FROM drafts WHERE id = ?').get(req.params.id);
@@ -29,7 +29,7 @@ draftRoutes.get('/:id', (req, res) => {
 });
 
 // Create new draft
-draftRoutes.post('/', (req, res) => {
+draftRoutes.post('/', (req: Request, res: Response) => {
   try {
     const { email_id, subject, to_email, body } = req.body;
     
@@ -51,7 +51,7 @@ draftRoutes.post('/', (req, res) => {
 });
 
 // Update draft
-draftRoutes.put('/:id', (req, res) => {
+draftRoutes.put('/:id', (req: Request, res: Response) => {
   try {
     const { subject, to_email, body } = req.body;
     const db = getDatabase();
@@ -80,7 +80,7 @@ draftRoutes.put('/:id', (req, res) => {
 });
 
 // Delete draft
-draftRoutes.delete('/:id', (req, res) => {
+draftRoutes.delete('/:id', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const result = db.prepare('DELETE FROM drafts WHERE id = ?').run(req.params.id);
@@ -94,6 +94,8 @@ draftRoutes.delete('/:id', (req, res) => {
     res.status(500).json({ error: 'Failed to delete draft' });
   }
 });
+
+
 
 
 

@@ -1,9 +1,26 @@
 import axios from 'axios'
 import { ChatMessage, Draft, Email, EmailInsights, PromptTemplate } from './types'
 
+// Use environment variable for API URL in production, or proxy in development
+const API_URL = import.meta.env.VITE_API_URL || '/api'
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_URL,
+  timeout: 10000, // 10 second timeout
 })
+
+// Add error interceptor for better error messages
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ECONNABORTED') {
+      error.message = 'Request timeout. Please check if the backend server is running.'
+    } else if (error.message === 'Network Error') {
+      error.message = 'Cannot connect to backend server. Make sure it is running on port 3001.'
+    }
+    return Promise.reject(error)
+  }
+)
 
 export async function fetchEmails(): Promise<Email[]> {
   const { data } = await api.get<Email[]>('/emails')
@@ -114,6 +131,8 @@ export async function clearChat(emailId?: number): Promise<void> {
 }
 
 export default api
+
+
 
 
 

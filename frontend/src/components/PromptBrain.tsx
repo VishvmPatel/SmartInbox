@@ -28,6 +28,7 @@ export function PromptBrain() {
 
   const refresh = async () => {
     setLoading(true)
+    setError(null)
     try {
       const data = await fetchPromptTemplates()
       setPrompts(data)
@@ -43,8 +44,10 @@ export function PromptBrain() {
           })
         }
       }
-    } catch (err) {
-      setError('Failed to load prompts')
+    } catch (err: any) {
+      console.error('Failed to load prompts:', err)
+      const errorMessage = err?.response?.data?.error || err?.message || 'Failed to load prompts. Make sure the backend server is running.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

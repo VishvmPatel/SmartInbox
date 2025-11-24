@@ -58,15 +58,19 @@ export function EmailDetail({ email, status, onToolbarAction }: EmailDetailProps
       </div>
       <div className="text-sm text-slate-600 dark:text-slate-300 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <p>
-          From:{' '}
-          <span className="font-medium text-slate-900">
+          <span className="text-slate-500 dark:text-slate-400">From:</span>{' '}
+          <span className="font-medium text-slate-900 dark:text-slate-100">
             {email.from_name} &lt;{email.from_email}&gt;
           </span>
         </p>
         <p>
-          To: <span className="font-medium text-slate-900">{email.to_email}</span>
+          <span className="text-slate-500 dark:text-slate-400">To:</span>{' '}
+          <span className="font-medium text-slate-900 dark:text-slate-100">{email.to_email}</span>
         </p>
-        <p>{new Date(email.date).toLocaleString()}</p>
+        <p>
+          <span className="text-slate-500 dark:text-slate-400">Date:</span>{' '}
+          <span className="text-slate-900 dark:text-slate-100">{new Date(email.date).toLocaleString()}</span>
+        </p>
       </div>
       <div className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line bg-slate-50 dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 min-h-[220px]">
         {email.body}
