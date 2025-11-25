@@ -133,8 +133,6 @@ export function PromptBrain() {
     }
   }
 
-  const selectedPrompt = prompts.find((p) => p.id === selectedId)
-
   return (
     <section
       id="prompt-brain"
