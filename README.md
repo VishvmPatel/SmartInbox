@@ -193,6 +193,38 @@ npm run preview          # Preview production build
 
 ---
 
+## 🚀 Production Deployment (Vercel)
+
+Both frontend and backend run on Vercel. These are the live URLs:
+
+- Frontend: `https://prompt-driven-email-productivity-agent-c28g-h92tqnnr2.vercel.app`
+- Backend (API): `https://prompt-driven-email-productivity-ag-sand.vercel.app`
+
+### Backend (Vercel)
+- **Root Directory**: `backend/`
+- **Build Command**: `npm install && npm run build`
+- **Output**: handled by Vercel serverless (`api/index.ts`)
+- **Environment Variables**:
+  - `FRONTEND_URL=https://prompt-driven-email-productivity-agent-c28g-h92tqnnr2.vercel.app`
+  - `GEMINI_API_KEY=...`
+  - `GEMINI_MODEL=gemini-2.0-flash` (or any available Gemini model)
+  - `USE_MOCK_LLM=false`
+- **Verification**: `GET /api/llm/status` returns provider/model (`gemini`, matches `GEMINI_MODEL`)
+
+### Frontend (Vercel)
+- **Root Directory**: `frontend/`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variables**:
+  - `VITE_API_URL=https://prompt-driven-email-productivity-ag-sand.vercel.app/api`
+
+### Post-Deploy Checks
+1. `GET /api/health` → `{ status: 'ok', ... }`
+2. `GET /api/llm/status` → `llmProvider: "gemini"`, `model: "gemini-2.0-flash"`
+3. Open frontend URL → inbox loads, actions hit backend successfully.
+
+---
+
 ## 🔌 API Endpoints
 
 **Base URL**: `http://localhost:3001/api` (dev) or `https://your-backend.vercel.app/api` (prod)
