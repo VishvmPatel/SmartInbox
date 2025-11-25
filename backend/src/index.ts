@@ -7,14 +7,22 @@ import { draftRoutes } from './routes/drafts';
 import { chatRoutes } from './routes/chat';
 import { initDatabase } from './db/database';
 
+/**
+ * Entry point for the backend API. This file wires together middleware,
+ * feature routes, health checks, and helper endpoints that verify our
+ * Gemini integration. Keeping this setup lean makes it easy to reason
+ * about the infrastructure plumbing while the heavy lifting happens in
+ * the dedicated route modules.
+ */
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// CORS configuration for production
+// Apply a strict-but-configurable CORS policy so production deployments
+// can lock traffic to the UI origin while local development stays open.
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*', // Allow all in dev, specific URL in production
+  origin: process.env.FRONTEND_URL || '*',
   credentials: true,
 };
 
@@ -30,6 +38,53 @@ app.use('/api/chat', chatRoutes);
 // Health check
 app.get('/api/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', message: 'Email Agent API is running' });
+});
+
+// LLM status check (for testing Gemini integration)
+app.get('/api/llm/status', (req: express.Request, res: express.Response) => {
+  const useMockLLM = process.env.USE_MOCK_LLM === 'true' || !process.env.GEMINI_API_KEY;
+  const hasApiKey = !!process.env.GEMINI_API_KEY;
+  const apiKeyPrefix = process.env.GEMINI_API_KEY?.substring(0, 7) || 'none';
+  
+  res.json({
+    status: 'ok',
+    llmProvider: useMockLLM ? 'mock' : 'gemini',
+    hasApiKey,
+    apiKeyConfigured: hasApiKey && !useMockLLM,
+    apiKeyPrefix: hasApiKey ? `${apiKeyPrefix}...` : 'not set',
+    model: process.env.GEMINI_MODEL || 'gemini-pro',
+    message: useMockLLM 
+      ? 'Using mock LLM service (set GEMINI_API_KEY to use Google Gemini)' 
+      : 'Google Gemini API is configured and ready'
+  });
+});
+
+// Test LLM endpoint (for testing Gemini integration)
+app.post('/api/llm/test', async (req: express.Request, res: express.Response) => {
+  try {
+    const { prompt } = req.body;
+    const testPrompt = prompt || 'Say "Hello, Gemini integration is working!" if you are an AI, or "Hello, Mock LLM is working!" if you are a mock service.';
+    
+    const { callLLM } = await import('./services/llmService');
+    const response = await callLLM(testPrompt);
+    
+    const useMockLLM = process.env.USE_MOCK_LLM === 'true' || !process.env.GEMINI_API_KEY;
+    
+    res.json({
+      success: true,
+      provider: useMockLLM ? 'mock' : 'gemini',
+      prompt: testPrompt,
+      response,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error('LLM test error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to test LLM',
+      provider: 'unknown'
+    });
+  }
 });
 
 // Initialize database and start server

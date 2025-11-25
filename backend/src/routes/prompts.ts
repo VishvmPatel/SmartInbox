@@ -1,6 +1,19 @@
 import { Router, Request, Response } from 'express';
 import { getDatabase } from '../db/database';
 
+type PromptTemplateRecord = {
+  name: string;
+  description: string | null;
+  template: string;
+  type: string | null;
+};
+
+/**
+ * Prompt templates are editable from the UI, so these routes expose a small
+ * CRUD layer around the `prompt_templates` table. Keeping prompts in the DB
+ * lets non-developers tweak LLM instructions without redeploying.
+ */
+
 export const promptRoutes = Router();
 
 // Get all prompt templates
@@ -59,7 +72,9 @@ promptRoutes.put('/:id', (req: Request, res: Response) => {
     const { name, description, template, type } = req.body;
     const db = getDatabase();
     
-    const existing = db.prepare('SELECT * FROM prompt_templates WHERE id = ?').get(req.params.id);
+    const existing = db
+      .prepare('SELECT * FROM prompt_templates WHERE id = ?')
+      .get(req.params.id) as PromptTemplateRecord | undefined;
     if (!existing) {
       return res.status(404).json({ error: 'Prompt template not found' });
     }

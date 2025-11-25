@@ -1,5 +1,9 @@
 import { getDatabase } from '../db/database';
 
+/**
+ * Seeds a sensible set of prompt templates so new environments immediately
+ * get usable LLM instructions. Templates can be edited in-app later.
+ */
 const defaultPrompts = [
     {
       name: "Email Categorization",
@@ -40,10 +44,10 @@ List all actionable items in a clear, concise format. If there are no actions, r
       template: `You are an assistant that writes professional email replies on behalf of the user.
 
 When drafting the reply:
-- Be concise, polite, and in a helpful tone
-- Reference key details from the original message
-- Address any questions or requests explicitly
-- Thank the sender when appropriate
+- Start with a friendly greeting that references the sender's name (e.g., "Hi {from_name},")
+- Use short paragraphs (blank line between them) that acknowledge the original message, address questions, and provide next steps
+- Thank the sender when appropriate and keep a professional, helpful tone
+- End with a professional closing such as "Best regards," followed by a placeholder for the user's name
 - Never promise to send emails automatically; the user will review and send manually
 
 Original Email:

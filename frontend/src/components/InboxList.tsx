@@ -1,5 +1,6 @@
 import { Email } from '../types'
 
+// Sidebar list that mirrors the inbox hierarchy plus pin badges.
 type InboxListProps = {
   emails: Email[]
   selectedEmailId?: number | null

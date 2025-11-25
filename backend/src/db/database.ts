@@ -4,6 +4,12 @@ import fs from 'fs';
 import { initMockInbox } from '../data/mockInbox';
 import { initDefaultPrompts } from '../data/defaultPrompts';
 
+/**
+ * Thin wrapper around better-sqlite3 that handles bootstrapping the
+ * local database file, creating our tables, and seeding mock data so
+ * developers always spin up a working inbox.
+ */
+
 let db: Database.Database | null = null;
 
 export function getDatabase(): Database.Database {
@@ -14,7 +20,7 @@ export function getDatabase(): Database.Database {
 }
 
 export async function initDatabase(): Promise<void> {
-  // Ensure data directory exists
+  // Ensure the data directory exists before opening the SQLite file.
   const dataDir = path.join(__dirname, '../../data');
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -44,7 +50,7 @@ export async function initDatabase(): Promise<void> {
 }
 
 function createTables(): void {
-  // Emails table
+  // Define every table up-front so migrations stay centralized.
   db!.exec(`
     CREATE TABLE IF NOT EXISTS emails (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -1,6 +1,10 @@
 import axios from 'axios'
 import { ChatMessage, Draft, Email, EmailInsights, PromptTemplate } from './types'
 
+/**
+  * Central Axios instance + typed helper functions so React components
+  * only think about data, not URLs or error handling.
+  */
 // Use environment variable for API URL in production, or proxy in development
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 

@@ -1,283 +1,260 @@
-# Prompt-Driven Email Productivity Agent
+# 📧 Prompt-Driven Email Productivity Agent
 
-A full-stack email productivity application that uses LLM-driven processing to help manage and respond to emails efficiently. The application features a mock inbox, customizable prompt templates, AI-powered email analysis, and draft management.
+An intelligent email management system powered by Google Gemini AI for categorization, summarization, and intelligent reply generation.
 
-## 🚀 Features
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.2-61dafb.svg)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 
-- **Mock Inbox**: 25 diverse sample emails covering various scenarios
-- **Prompt Brain**: Create, edit, and manage prompt templates for LLM operations
-- **LLM-Driven Processing**:
-  - Email categorization (urgent, work, personal, etc.)
-  - Action extraction from emails
-  - Auto-reply draft generation
-  - Email summarization
-  - Priority assessment
-- **Email Agent Chat**: Interactive chat interface with email context
-- **Draft Management**: Save and edit email drafts (never sent automatically)
-- **Modern UI**: Responsive design with dark mode support
-- **Email Management**: Pin, archive, and organize emails
+---
+
+## ✨ Features
+
+- 🤖 **AI-Powered Processing**: Email categorization, summarization, action extraction, and intelligent reply generation
+- 📝 **Customizable Prompts**: Create and manage prompt templates for your workflow
+- 💬 **Interactive Chat Agent**: Get contextual assistance with email-related queries
+- 📌 **Smart Organization**: Pin, archive, and manage emails efficiently
+- 🎨 **Modern UI**: Beautiful, responsive interface with dark mode support
+- 💾 **Draft Management**: Save and edit reply drafts (never auto-sends)
+
+---
 
 ## 🛠️ Tech Stack
 
-### Backend
-- **Node.js** + **Express.js** - REST API server
-- **TypeScript** - Type-safe development
-- **SQLite** (better-sqlite3) - Database for persistence
-- **OpenAI API** (with mock fallback) - LLM integration
+**Backend**: Node.js, Express.js, TypeScript, SQLite, Google Gemini API  
+**Frontend**: React, TypeScript, Vite, Tailwind CSS
 
-### Frontend
-- **React** + **TypeScript** - UI framework
-- **Vite** - Build tool and dev server
-- **Tailwind CSS** - Styling
-- **Axios** - HTTP client
+---
 
 ## 📋 Prerequisites
 
-- Node.js (v18 or higher)
-- npm (v9 or higher)
+- Node.js (v18+)
+- npm (v9+)
+- Google Gemini API Key (optional - works with mock LLM by default)
 
-## 🔧 Installation
+---
 
-1. **Clone the repository** (if not already done):
-   ```bash
-   git clone <repository-url>
-   cd OceanAI
+## 🚀 Quick Start
+
+### 1. Clone and Install
+
+```bash
+git clone <repository-url>
+cd OceanAI
+npm run install:all
+```
+
+### 2. Configure Environment
+
+Create `backend/.env`:
+
+```env
+PORT=3001
+FRONTEND_URL=http://localhost:3000
+GEMINI_API_KEY=your-api-key-here  # Optional
+GEMINI_MODEL=gemini-pro            # Optional
+USE_MOCK_LLM=false                 # Set to true to use mock LLM
+```
+
+### 3. Run Development Servers
+
+**Terminal 1 - Backend:**
+```bash
+npm run dev:backend
+```
+
+**Terminal 2 - Frontend:**
+```bash
+npm run dev:frontend
+```
+
+Open `http://localhost:3000` in your browser.
+
+---
+
+## 📖 Usage
+
+### Email Actions
+Select an email and use the action buttons:
+- **📋 Categorize**: Classify email into categories
+- **✅ Extract Actions**: Identify actionable items
+- **✍️ Draft Reply**: Generate context-aware reply
+- **📝 Summarize**: Get concise summary
+- **⚡ Assess Priority**: Determine urgency level
+
+### Prompt Brain
+Navigate to **Prompt Brain** to create, edit, and manage custom prompt templates.
+
+### Draft Manager
+Generated replies automatically load into the Draft Manager. Edit and save drafts (they never auto-send).
+
+### Email Agent Chat
+Ask questions about selected emails using the chat interface for contextual assistance.
+
+---
+
+## 🚀 Deployment on Vercel
+
+### Backend Deployment
+
+1. **Create Vercel Project**
+   - Import your repository
+   - Set **Root Directory**: `backend`
+   - Set **Build Command**: `npm install && npm run build`
+   - Set **Output Directory**: `dist`
+   - Set **Install Command**: `npm install`
+
+2. **Environment Variables**
    ```
-
-2. **Install all dependencies**:
-   ```bash
-   npm run install:all
-   ```
-   
-   This will install dependencies for:
-   - Root package
-   - Backend (`backend/`)
-   - Frontend (`frontend/`)
-
-3. **Set up environment variables** (optional):
-   
-   Create `backend/.env` file:
-   ```env
    PORT=3001
-   OPENAI_API_KEY=your-api-key-here
-   ```
-   
-   > **Note**: The application works with a mock LLM service by default. To use OpenAI API, add your API key to the `.env` file.
-
-## 🏃 Running the Application
-
-### Development Mode
-
-1. **Start the backend server** (Terminal 1):
-   ```bash
-   npm run dev:backend
-   ```
-   
-   The backend will start on `http://localhost:3001`
-
-2. **Start the frontend dev server** (Terminal 2):
-   ```bash
-   npm run dev:frontend
-   ```
-   
-   The frontend will start on `http://localhost:3000`
-
-3. **Open your browser**:
-   ```
-   http://localhost:3000
+   NODE_ENV=production
+   FRONTEND_URL=https://your-frontend.vercel.app
+   GEMINI_API_KEY=your-api-key
+   GEMINI_MODEL=gemini-pro
+   USE_MOCK_LLM=false
    ```
 
-### Production Build
+3. **Deploy**
+   - Click Deploy
+   - Note your backend URL (e.g., `https://your-backend.vercel.app`)
 
-1. **Build both frontend and backend**:
-   ```bash
-   npm run build
+### Frontend Deployment
+
+1. **Create Vercel Project**
+   - Import the same repository
+   - Set **Root Directory**: `frontend`
+   - Set **Build Command**: `npm run build`
+   - Set **Output Directory**: `dist`
+   - Set **Install Command**: `npm install`
+
+2. **Environment Variables**
+   ```
+   VITE_API_URL=https://your-backend.vercel.app/api
    ```
 
-2. **Start the backend**:
-   ```bash
-   cd backend
-   npm start
-   ```
+3. **Deploy**
+   - Click Deploy
+   - Your app will be live at the Vercel URL
 
-3. **Serve the frontend** (using a static server):
-   ```bash
-   cd frontend
-   npm run preview
-   ```
+### Post-Deployment
 
-## 📖 Demo Steps
+- Verify backend: `https://your-backend.vercel.app/api/health`
+- Check LLM status: `https://your-backend.vercel.app/api/llm/status`
+- Update `FRONTEND_URL` in backend env vars to match your frontend URL exactly (no trailing slash)
 
-### 1. Explore the Mock Inbox
-- The inbox displays 25 sample emails
-- Click on any email to view details
-- Use the sidebar to navigate between sections
-
-### 2. Test LLM Processing
-Select an email and try these actions:
-
-- **Categorize**: Click "Categorize" to classify the email
-- **Extract Actions**: Click "Extract Actions" to see actionable items
-- **Draft Reply**: Click "Draft Reply" to generate a context-aware response
-- **Summarize**: Click "Summarize" to get a brief summary
-- **Assess Priority**: Click "Assess Priority" to determine urgency
-
-### 3. Manage Prompt Templates
-- Navigate to the **Prompt Brain** section
-- View default templates (Categorization, Action Extraction, etc.)
-- Click on a template to edit it
-- Create new templates with custom prompts
-- Delete templates you don't need
-
-### 4. Save and Edit Drafts
-- After generating a reply draft, go to the **Drafts** section
-- The draft is automatically loaded into the editor
-- Edit the subject, recipient, or body
-- Click "Save Draft" to store it
-- Edit or delete saved drafts anytime
-
-### 5. Use the Email Agent Chat
-- Select an email
-- Go to the **Email Agent** section
-- Type questions about the email
-- Use quick prompt chips for common actions
-- The agent responds with email context
-
-### 6. Organize Emails
-- **Pin emails**: Click the pin icon to keep important emails at the top
-- **Archive emails**: Click the archive icon to move emails out of the inbox
-- **View archived**: Scroll down to see archived emails and restore them
+---
 
 ## 📁 Project Structure
 
 ```
 OceanAI/
-├── backend/
+├── backend/              # Express API server
 │   ├── src/
-│   │   ├── data/
-│   │   │   ├── mockInbox.ts          # 25 sample emails
-│   │   │   └── defaultPrompts.ts     # Default prompt templates
-│   │   ├── db/
-│   │   │   └── database.ts            # Database setup
-│   │   ├── routes/
-│   │   │   ├── emails.ts             # Email endpoints
-│   │   │   ├── prompts.ts            # Prompt template endpoints
-│   │   │   ├── drafts.ts             # Draft endpoints
-│   │   │   └── chat.ts               # Chat endpoints
-│   │   ├── services/
-│   │   │   └── llmService.ts         # LLM integration
-│   │   └── index.ts                  # Express server
-│   ├── data/
-│   │   └── email_agent.db            # SQLite database (auto-created)
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── InboxList.tsx         # Email list
-│   │   │   ├── EmailDetail.tsx       # Email details
-│   │   │   ├── EmailActions.tsx     # LLM action buttons
-│   │   │   ├── PromptBrain.tsx       # Prompt template manager
-│   │   │   ├── DraftManager.tsx      # Draft manager
-│   │   │   ├── ChatAgent.tsx         # Chat interface
-│   │   │   └── SidebarNav.tsx        # Navigation
-│   │   ├── api.ts                    # API client
-│   │   ├── types.ts                  # TypeScript types
-│   │   ├── App.tsx                   # Main app component
-│   │   └── main.tsx                  # Entry point
-│   └── package.json
-└── README.md
+│   │   ├── routes/      # API endpoints
+│   │   ├── services/    # LLM service (Gemini + mock)
+│   │   ├── db/          # Database setup
+│   │   └── data/        # Mock data & prompts
+│   └── data/            # SQLite database (auto-created)
+│
+└── frontend/            # React application
+    └── src/
+        ├── components/  # React components
+        ├── api.ts       # API client
+        └── types.ts     # TypeScript types
 ```
+
+---
+
+## 🔧 Available Scripts
+
+**Root:**
+```bash
+npm run dev:backend      # Start backend dev server
+npm run dev:frontend     # Start frontend dev server
+npm run install:all      # Install all dependencies
+npm run build            # Build both services
+```
+
+**Backend:**
+```bash
+cd backend
+npm run dev              # Dev server with hot reload
+npm run build            # Compile TypeScript
+npm start                # Production server
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm run dev              # Vite dev server
+npm run build            # Production build
+npm run preview          # Preview production build
+```
+
+---
 
 ## 🔌 API Endpoints
 
-### Emails
-- `GET /api/emails` - List all emails
-- `GET /api/emails/:id` - Get single email
-- `PATCH /api/emails/:id/read` - Mark as read
-- `POST /api/emails/:id/categorize` - Categorize email
-- `POST /api/emails/:id/actions` - Extract actions
-- `POST /api/emails/:id/reply` - Generate reply draft
-- `POST /api/emails/:id/summarize` - Summarize email
-- `POST /api/emails/:id/priority` - Assess priority
+**Base URL**: `http://localhost:3001/api` (dev) or `https://your-backend.vercel.app/api` (prod)
 
-### Prompts
-- `GET /api/prompts` - List all templates
-- `GET /api/prompts/:id` - Get single template
-- `POST /api/prompts` - Create template
-- `PUT /api/prompts/:id` - Update template
-- `DELETE /api/prompts/:id` - Delete template
+- `GET /emails` - Get all emails
+- `GET /emails/:id` - Get single email
+- `POST /emails/:id/categorize` - Categorize email
+- `POST /emails/:id/actions` - Extract actions
+- `POST /emails/:id/reply` - Generate reply draft
+- `POST /emails/:id/summarize` - Summarize email
+- `POST /emails/:id/priority` - Assess priority
+- `GET /prompts` - Get all prompt templates
+- `GET /drafts` - Get all drafts
+- `POST /chat/:emailId?` - Send chat message
+- `GET /api/health` - Health check
+- `GET /api/llm/status` - LLM service status
 
-### Drafts
-- `GET /api/drafts` - List all drafts
-- `GET /api/drafts/:id` - Get single draft
-- `POST /api/drafts` - Create draft
-- `PUT /api/drafts/:id` - Update draft
-- `DELETE /api/drafts/:id` - Delete draft
-
-### Chat
-- `GET /api/chat/:emailId?` - Get chat messages
-- `POST /api/chat/:emailId?` - Send message
-- `DELETE /api/chat/:emailId?` - Clear chat
-
-## 🎨 UI Features
-
-- **Dark Mode**: Toggle dark/light theme (preference saved)
-- **Responsive Design**: Works on desktop and mobile
-- **Toast Notifications**: Feedback for user actions
-- **Email Status**: Visual indicators for pinned/archived emails
-- **Modern Design**: Card-based layouts with gradients
-
-## 🔒 Security Notes
-
-- **Drafts Never Sent**: The application never sends emails automatically
-- **Mock Data**: All emails are mock data for demonstration
-- **API Keys**: Store API keys in `.env` file (not committed)
+---
 
 ## 🐛 Troubleshooting
 
-### Backend won't start
-- Check if port 3001 is available
-- Ensure `backend/data/` directory exists
-- Delete `backend/data/email_agent.db` to reset database
+**Backend won't start:**
+- Check port 3001 is available
+- Ensure `backend/data/` directory exists (auto-created)
 
-### Frontend won't start
-- Check if port 3000 is available
-- Ensure backend is running on port 3001
-- Clear browser cache if UI doesn't update
+**CORS errors:**
+- Verify `FRONTEND_URL` matches frontend URL exactly (no trailing slash)
+- Check environment variables are set correctly
 
-### Database errors
+**LLM not working:**
+- Verify `GEMINI_API_KEY` is set correctly
+- Check API key has available quota
+- Review backend logs for errors
+
+**Database issues:**
 - Delete `backend/data/email_agent.db` to reset
-- Restart the backend server
+- Restart backend server
 
-## 📝 Default Prompt Templates
+---
 
-1. **Email Categorization** - Categorizes emails into predefined categories
-2. **Action Extraction** - Extracts actionable items from emails
-3. **Auto Reply Draft** - Generates context-aware reply drafts
-4. **Email Summary** - Creates concise summaries
-5. **Priority Assessment** - Assesses email priority levels
+## 🔒 Security Notes
 
-## 🤝 Contributing
+- **Drafts never auto-send** - All drafts require manual review
+- Never commit `.env` files to version control
+- Use environment variables for API keys in production
+- Set `FRONTEND_URL` to exact domain in production (avoid wildcards)
 
-This is a demonstration project. Feel free to fork and extend it!
+---
 
-## 🚀 Deployment
-
-For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-**Quick Deploy Options:**
-- **Railway**: Deploy both backend and frontend in one project
-- **Render**: Free tier available for both services
-- **Vercel + Railway**: Vercel for frontend, Railway for backend
-
-**Environment Variables Needed:**
-- Backend: `PORT`, `FRONTEND_URL`, `OPENAI_API_KEY` (optional)
-- Frontend: `VITE_API_URL`
-
-## 📄 License
+## 📝 License
 
 MIT License
 
 ---
 
-**Note**: This application uses a mock LLM service by default. To use OpenAI API, add your API key to `backend/.env` file.
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+---
+
+**Made with ❤️ for better email productivity**

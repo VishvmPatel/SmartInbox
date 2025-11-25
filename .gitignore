@@ -11,6 +11,8 @@ build/
 .env
 .env.local
 .env.*.local
+backend/.env
+*.env
 
 # IDE
 .vscode/
@@ -39,5 +41,4 @@ yarn-error.log*
 tmp/
 temp/
 *.tmp
-
 

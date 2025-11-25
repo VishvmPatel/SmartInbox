@@ -1,3 +1,4 @@
+// Shared TypeScript models consumed by both UI and API helper layer.
 export interface Email {
   id: number
   subject: string

@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { clearChat, fetchChatMessages, sendChatMessage } from '../api'
 import { ChatMessage, Email } from '../types'
 
+// Conversation UI that lets the user interrogate an e-mail. We stream chat
+// history from the backend so each thread stays tied to its email id.
+
 type ChatAgentProps = {
   selectedEmail: Email | null
 }

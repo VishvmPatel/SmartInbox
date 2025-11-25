@@ -14,6 +14,10 @@ type EmailStatus = {
   archived?: boolean
 }
 
+/**
+ * Top-level page shell. Manages global e-mail state, dark mode, and the
+ * orchestration between inbox, detail pane, prompts, drafts, and the chat agent.
+ */
 function App() {
   const [emails, setEmails] = useState<Email[]>([])
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)

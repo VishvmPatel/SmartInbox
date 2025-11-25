@@ -1,6 +1,17 @@
 import { Router, Request, Response } from 'express';
 import { getDatabase } from '../db/database';
 
+type DraftRecord = {
+  subject: string;
+  to_email: string;
+  body: string;
+};
+
+/**
+ * CRUD endpoints for saved reply drafts. The UI relies on these routes to
+ * persist edits even though final sending happens outside this project.
+ */
+
 export const draftRoutes = Router();
 
 // Get all drafts
@@ -56,7 +67,9 @@ draftRoutes.put('/:id', (req: Request, res: Response) => {
     const { subject, to_email, body } = req.body;
     const db = getDatabase();
     
-    const existing = db.prepare('SELECT * FROM drafts WHERE id = ?').get(req.params.id);
+    const existing = db
+      .prepare('SELECT * FROM drafts WHERE id = ?')
+      .get(req.params.id) as DraftRecord | undefined;
     if (!existing) {
       return res.status(404).json({ error: 'Draft not found' });
     }

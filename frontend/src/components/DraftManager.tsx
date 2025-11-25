@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { createDraft, deleteDraft, fetchDrafts, updateDraft } from '../api'
 import { Draft, Email } from '../types'
 
+// Handles persistence for reply drafts. Keeps the editor in sync with
+// whatever the LLM just generated as well as manual user edits.
+
 type DraftManagerProps = {
   selectedEmail: Email | null
   replyDraft?: string

@@ -1,5 +1,6 @@
 import { Email } from '../types'
 
+// Renders metadata, body, and toolbar for the highlighted email.
 type EmailStatus = {
   pinned?: boolean
   archived?: boolean

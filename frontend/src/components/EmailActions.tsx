@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { runEmailAction } from '../api'
 import { Email, EmailInsights } from '../types'
 
+// Button cluster that triggers categorization/summarization/etc. against the backend.
+
 type EmailActionsProps = {
   email: Email
   insights: EmailInsights

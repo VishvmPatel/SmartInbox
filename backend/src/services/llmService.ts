@@ -1,36 +1,109 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai';
 
-const useMockLLM = process.env.USE_MOCK_LLM === 'true' || !process.env.OPENAI_API_KEY;
-let openai: OpenAI | null = null;
+/**
+ * Shared Gemini helper that knows how to:
+ *  - dynamically initialize the correct model when env vars change
+ *  - fall back to a mock model for offline development
+ *  - keep the calling signature consistent across routes
+ */
+export type LLMMessage = {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+};
 
-if (!useMockLLM && process.env.OPENAI_API_KEY) {
-  openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+type ChatMessages = LLMMessage[];
+
+let geminiModel: GenerativeModel | null = null;
+let cachedApiKey: string | null = null;
+let cachedModelName: string | null = null;
+
+// Lazily create (or recreate) the Gemini client so hot-reloads pick up new keys/models.
+function getGeminiModel(): { model: GenerativeModel | null; useMock: boolean } {
+  const apiKey = process.env.GEMINI_API_KEY || '';
+  const forceMock = process.env.USE_MOCK_LLM === 'true';
+  const modelName = process.env.GEMINI_MODEL || 'gemini-pro';
+
+  if (forceMock || !apiKey) {
+    return { model: null, useMock: true };
+  }
+
+  const needsNewClient =
+    !geminiModel || apiKey !== cachedApiKey || modelName !== cachedModelName;
+
+  if (needsNewClient) {
+    try {
+      const client = new GoogleGenerativeAI(apiKey);
+      geminiModel = client.getGenerativeModel({ model: modelName });
+      cachedApiKey = apiKey;
+      cachedModelName = modelName;
+      console.log('✅ Gemini client initialized (model:', modelName, ')');
+    } catch (error) {
+      console.error('Failed to initialize Gemini client:', error);
+      geminiModel = null;
+      return { model: null, useMock: true };
+    }
+  }
+
+  return { model: geminiModel, useMock: false };
 }
 
-export async function callLLM(prompt: string): Promise<string> {
-  if (useMockLLM || !openai) {
-    return mockLLMResponse(prompt);
+/**
+ * Normalizes every LLM call to a simple `callLLM` interface so the rest of the
+ * codebase never worries about providers or message formats.
+ */
+export async function callLLM(promptOrMessages: string | ChatMessages): Promise<string> {
+  const messages: ChatMessages =
+    typeof promptOrMessages === 'string'
+      ? [
+          {
+            role: 'user',
+            content: promptOrMessages,
+          },
+        ]
+      : promptOrMessages;
+
+  const { model, useMock } = getGeminiModel();
+
+  if (useMock || !model) {
+    console.log('🤖 Using Mock LLM (useMockLLM:', useMock, ', geminiModel:', !!model, ')');
+    return mockLLMResponse(messages);
   }
+
+  const joinedPrompt = messages
+    .map((m) => `${m.role.toUpperCase()}:\n${m.content}`)
+    .join('\n\n');
+
+  const generationConfig = {
+    temperature: parseFloat(process.env.GEMINI_TEMPERATURE || '0.5'),
+    maxOutputTokens: parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || '1024', 10),
+    topP: parseFloat(process.env.GEMINI_TOP_P || '0.9'),
+    topK: parseInt(process.env.GEMINI_TOP_K || '40', 10),
+  };
   
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
+    console.log('🤖 Calling Google Gemini API...');
+    const response = await model.generateContent({
+      contents: [
         {
           role: 'user',
-          content: prompt,
+          parts: [{ text: joinedPrompt }],
         },
       ],
-      temperature: 0.7,
-      max_tokens: 1000,
+      generationConfig,
     });
-    
-    return response.choices[0]?.message?.content || 'No response generated';
+
+    const text = response.response?.text();
+    if (!text) {
+      console.warn('Gemini returned an empty response. Falling back to mock.');
+      return mockLLMResponse(messages);
+    }
+
+    console.log('✅ Gemini response received (length:', text.length, 'chars)');
+    return text;
   } catch (error) {
-    console.error('OpenAI API error:', error);
-    return mockLLMResponse(prompt);
+    console.error('❌ Gemini API error:', error);
+    console.log('🔄 Falling back to Mock LLM');
+    return mockLLMResponse(messages);
   }
 }
 
@@ -241,7 +314,23 @@ function summarizeEmail(email: ParsedEmail): string {
   if (body.includes('order') && (body.includes('shipped') || body.includes('delivery'))) {
     return `${fromName} notified you that your order has been shipped with tracking information.`
   }
-  return `${fromName} wrote about "${subject}". Review the details and respond as needed.`
+  
+  // Generic summary for emails that don't match specific patterns
+  // Extract key information from the email
+  const bodyPreview = email.body ? (email.body.length > 200 ? email.body.substring(0, 200) + '...' : email.body) : '';
+  const keyPoints: string[] = [];
+  
+  if (subject) {
+    keyPoints.push(`Subject: ${subject}`);
+  }
+  if (fromName) {
+    keyPoints.push(`From: ${fromName}`);
+  }
+  if (bodyPreview) {
+    keyPoints.push(`Content: ${bodyPreview}`);
+  }
+  
+  return `${fromName} sent an email with the subject "${subject}". ${bodyPreview ? 'The email discusses: ' + bodyPreview : 'Please review the email content for details.'}`
 }
 
 function extractActionsFromEmail(email: ParsedEmail): string {
@@ -315,16 +404,42 @@ function extractActionsFromEmail(email: ParsedEmail): string {
 }
 
 function extractUserQuestion(prompt: string): string {
-  const match = prompt.match(/User's question:\s*([\s\S]*?)(?:Provide a helpful|$)/i)
-  return match ? match[1].trim() : ''
+  // Try multiple patterns to extract user question
+  const patterns = [
+    /User's question:\s*([\s\S]*?)(?:\n\nProvide|$)/i,
+    /User's question:\s*([\s\S]+)/i,
+    /question:\s*([\s\S]*?)(?:\n\n|$)/i,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = prompt.match(pattern);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+  
+  // If no pattern matches, try to extract the last meaningful line
+  const lines = prompt.split('\n');
+  const questionLine = lines.find(line => 
+    line.toLowerCase().includes('question') || 
+    line.toLowerCase().includes('ask') ||
+    line.trim().length > 10 && !line.toLowerCase().includes('email context')
+  );
+  
+  return questionLine ? questionLine.replace(/^.*?question:\s*/i, '').trim() : '';
 }
 
-function mockLLMResponse(prompt: string): string {
+function mockLLMResponse(messages: ChatMessages): string {
   // Simple mock responses based on prompt content
+  const prompt = messages.map((m) => m.content).join('\n');
   const lowerPrompt = prompt.toLowerCase();
   const parsedEmail = extractEmailFields(prompt);
-  const userQuestion = extractUserQuestion(prompt).toLowerCase();
-  const promptForIntent = userQuestion || lowerPrompt;
+  const lastUserMessage =
+    [...messages]
+      .reverse()
+      .find((m) => m.role === 'user' && typeof m.content === 'string')?.content?.toString() || '';
+  const userQuestion = lastUserMessage || extractUserQuestion(prompt);
+  const promptForIntent = userQuestion.toLowerCase() || lowerPrompt;
   const actionMatch = prompt.match(/\[ACTION:(.+?)\]/i);
   const forcedAction = actionMatch?.[1]?.trim().toLowerCase();
 
@@ -343,33 +458,91 @@ function mockLLMResponse(prompt: string): string {
     }
   }
 
-  const wantsReply =
-    promptForIntent.includes('reply') ||
-    promptForIntent.includes('draft') ||
-    promptForIntent.includes('respond');
+  // Handle reply/draft requests - but be careful not to trigger on "what is this email about"
+  const wantsReply = 
+    (promptForIntent.includes('draft a reply') || promptForIntent.includes('write a reply') || 
+     promptForIntent.includes('reply to this') || 
+     (promptForIntent.includes('reply') && promptForIntent.includes('draft'))) &&
+    !promptForIntent.includes('what is this email') &&
+    !promptForIntent.includes('what\'s this email') &&
+    !promptForIntent.includes('what is the email about');
+  
   if (wantsReply) {
     return buildReplyForEmail(parsedEmail);
   }
   
-  if (promptForIntent.includes('categorize') || promptForIntent.includes('category')) {
+  // Handle categorization requests
+  if (promptForIntent.includes('categorize') || promptForIntent.includes('category') || promptForIntent.includes('what type')) {
     return determineCategory(parsedEmail);
   }
   
-  if (promptForIntent.includes('action') || promptForIntent.includes('task')) {
+  // Handle action extraction requests
+  if (promptForIntent.includes('action') || promptForIntent.includes('task') || 
+      promptForIntent.includes('next step') || promptForIntent.includes('what should i do')) {
     return extractActionsFromEmail(parsedEmail);
   }
   
-  if (promptForIntent.includes('summary') || promptForIntent.includes('summarize')) {
+  // Handle summarization requests (including "what is this email about")
+  // This should be checked BEFORE reply detection to avoid confusion
+  if (promptForIntent.includes('summary') || promptForIntent.includes('summarize') || 
+      promptForIntent.includes('summarise') || 
+      promptForIntent.includes('what is this email') ||
+      promptForIntent.includes('what is the email about') ||
+      promptForIntent.includes('what\'s this email') ||
+      promptForIntent.includes('tell me about this email') || 
+      promptForIntent.includes('explain this email') ||
+      promptForIntent.includes('what does this email say') || 
+      promptForIntent.includes('what is it about') ||
+      promptForIntent.includes('what is the email')) {
     return summarizeEmail(parsedEmail);
   }
   
-  if (promptForIntent.includes('priority')) {
+  // Handle priority requests
+  if (promptForIntent.includes('priority') || promptForIntent.includes('urgent') || 
+      promptForIntent.includes('how urgent')) {
     return determinePriority(parsedEmail);
+  }
+  
+  // Handle risk/concern questions
+  if (promptForIntent.includes('risk') || promptForIntent.includes('concern') || 
+      promptForIntent.includes('problem') || promptForIntent.includes('issue')) {
+    const summary = summarizeEmail(parsedEmail);
+    const actions = extractActionsFromEmail(parsedEmail);
+    return `Based on the email content:\n\n${summary}\n\nPotential concerns:\n${actions}`;
+  }
+  
+  // Handle tone/style questions
+  if (promptForIntent.includes('tone') || promptForIntent.includes('style') || 
+      promptForIntent.includes('how should i respond')) {
+    const category = determineCategory(parsedEmail);
+    const priority = determinePriority(parsedEmail);
+    let tone = 'professional and friendly';
+    if (category === 'urgent') tone = 'urgent and direct';
+    if (category === 'personal') tone = 'warm and casual';
+    if (category === 'work') tone = 'professional and clear';
+    return `Based on the email category (${category}) and priority (${priority}), you should use a ${tone} tone in your response.`;
+  }
+  
+  // Handle general "what" questions about the email
+  if (promptForIntent.includes('what') && (promptForIntent.includes('email') || parsedEmail.body)) {
+    return summarizeEmail(parsedEmail);
+  }
+  
+  // If we have email content but no specific match, provide a helpful summary
+  if (parsedEmail.body || parsedEmail.subject) {
+    // Check if it's a general question about the email
+    if (promptForIntent.includes('what') || promptForIntent.includes('about') || 
+        promptForIntent.includes('explain') || promptForIntent.includes('tell me')) {
+      return summarizeEmail(parsedEmail);
+    }
+    // Otherwise provide a summary as default
+    return summarizeEmail(parsedEmail);
+  }
+  
+  // Final fallback - but try to be more helpful
+  if (promptForIntent.includes('email')) {
+    return 'I can help you with email-related tasks. Please select an email first, or ask me a specific question about your emails.';
   }
   
   return 'I understand your request. Here is a helpful response based on the email content.';
 }
-
-
-
-

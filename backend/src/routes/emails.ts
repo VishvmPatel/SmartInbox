@@ -2,6 +2,11 @@ import { Router, Request, Response } from 'express';
 import { getDatabase } from '../db/database';
 import { callLLM } from '../services/llmService';
 
+/**
+ * Core email REST API. Each endpoint either returns inbox data or proxies a
+ * work request to the LLM (categorize, summarize, draft reply, etc.) using
+ * the prompt templates stored in SQLite.
+ */
 export const emailRoutes = Router();
 
 // Get all emails
@@ -127,7 +132,16 @@ emailRoutes.post('/:id/reply', async (req: Request, res: Response) => {
     prompt = prompt.replace('{from_name}', email.from_name);
     prompt = prompt.replace('{from_email}', email.from_email);
     prompt = prompt.replace('{body}', email.body);
-    prompt = `${prompt}\n\n[ACTION:REPLY]`;
+
+    const replyFormattingGuidance = `
+Formatting requirements:
+- Begin with a friendly greeting that mentions ${email.from_name || 'the sender'} (e.g., "Hi ${email.from_name || 'there'},")
+- Provide 1-2 concise paragraphs that acknowledge the message, answer questions, and outline next steps
+- Close with a professional sign-off such as "Best regards," followed by a placeholder for the user's name
+- Keep the tone helpful, appreciative, and confident
+`;
+
+    prompt = `${prompt}\n${replyFormattingGuidance}\n[ACTION:REPLY]`;
     
     const replyBody = await callLLM(prompt);
     res.json({ replyBody: replyBody.trim() });

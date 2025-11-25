@@ -1,3 +1,4 @@
+// Static navigation column linking to each major dashboard section.
 const navItems = [
   { label: 'Inbox', href: '#inbox' },
   { label: 'Prompt Brain', href: '#prompt-brain' },
