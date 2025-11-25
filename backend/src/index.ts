@@ -84,10 +84,15 @@ app.get('/api/llm/status', (req: express.Request, res: express.Response) => {
 });
 
 // Middleware to ensure database is initialized on each request (for serverless)
-// Skip database init for OPTIONS requests (CORS preflight)
+// Skip database init for OPTIONS requests (CORS preflight) and health checks
 app.use(async (req, res, next) => {
   // Skip database initialization for OPTIONS requests (CORS preflight)
   if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
+  // Skip for health check endpoints
+  if (req.path === '/api/health' || req.path === '/api/llm/status') {
     return next();
   }
   
@@ -95,9 +100,17 @@ app.use(async (req, res, next) => {
     const { ensureDatabase } = await import('./db/database');
     await ensureDatabase();
     next();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Database initialization error:', error);
-    res.status(500).json({ error: 'Database initialization failed' });
+    console.error('Error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      code: error?.code
+    });
+    res.status(500).json({ 
+      error: 'Database initialization failed',
+      message: error?.message || 'Unknown error'
+    });
   }
 });
 
