@@ -29,18 +29,12 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Routes
-app.use('/api/emails', emailRoutes);
-app.use('/api/prompts', promptRoutes);
-app.use('/api/drafts', draftRoutes);
-app.use('/api/chat', chatRoutes);
-
-// Health check
+// Health check (no database needed)
 app.get('/api/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', message: 'Email Agent API is running' });
 });
 
-// LLM status check (for testing Gemini integration)
+// LLM status check (no database needed)
 app.get('/api/llm/status', (req: express.Request, res: express.Response) => {
   const useMockLLM = process.env.USE_MOCK_LLM === 'true' || !process.env.GEMINI_API_KEY;
   const hasApiKey = !!process.env.GEMINI_API_KEY;
@@ -58,6 +52,24 @@ app.get('/api/llm/status', (req: express.Request, res: express.Response) => {
       : 'Google Gemini API is configured and ready'
   });
 });
+
+// Middleware to ensure database is initialized on each request (for serverless)
+app.use(async (req, res, next) => {
+  try {
+    const { ensureDatabase } = await import('./db/database');
+    await ensureDatabase();
+    next();
+  } catch (error) {
+    console.error('Database initialization error:', error);
+    res.status(500).json({ error: 'Database initialization failed' });
+  }
+});
+
+// Routes (require database)
+app.use('/api/emails', emailRoutes);
+app.use('/api/prompts', promptRoutes);
+app.use('/api/drafts', draftRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Test LLM endpoint (for testing Gemini integration)
 app.post('/api/llm/test', async (req: express.Request, res: express.Response) => {
@@ -87,15 +99,20 @@ app.post('/api/llm/test', async (req: express.Request, res: express.Response) =>
   }
 });
 
-// Initialize database and start server
-initDatabase().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+// Initialize database and start server (only for non-serverless environments)
+if (process.env.VERCEL !== '1' && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  initDatabase().then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  }).catch((error) => {
+    console.error('Failed to initialize database:', error);
+    process.exit(1);
   });
-}).catch((error) => {
-  console.error('Failed to initialize database:', error);
-  process.exit(1);
-});
+}
+
+// Export app for serverless (Vercel)
+export default app;
 
 
 

@@ -11,17 +11,40 @@ import { initDefaultPrompts } from '../data/defaultPrompts';
  */
 
 let db: Database.Database | null = null;
+let initPromise: Promise<void> | null = null;
 
 export function getDatabase(): Database.Database {
   if (!db) {
-    throw new Error('Database not initialized');
+    throw new Error('Database not initialized. Call ensureDatabase() first.');
   }
   return db;
 }
 
-export async function initDatabase(): Promise<void> {
-  // Ensure the data directory exists before opening the SQLite file.
-  const dataDir = path.join(__dirname, '../../data');
+/**
+ * Ensures database is initialized. Safe to call multiple times.
+ * In serverless environments, uses /tmp for the database file.
+ */
+export async function ensureDatabase(): Promise<void> {
+  if (db) {
+    return; // Already initialized
+  }
+  
+  if (initPromise) {
+    return initPromise; // Initialization in progress
+  }
+  
+  initPromise = _initDatabase();
+  await initPromise;
+}
+
+async function _initDatabase(): Promise<void> {
+  // In serverless (Vercel), use /tmp directory (only writable location)
+  // In local development, use the data directory
+  const isServerless = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+  const dataDir = isServerless 
+    ? '/tmp' 
+    : path.join(__dirname, '../../data');
+  
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
   }
@@ -47,6 +70,11 @@ export async function initDatabase(): Promise<void> {
   }
   
   console.log('✅ Database initialized successfully');
+}
+
+// Export initDatabase for backward compatibility
+export async function initDatabase(): Promise<void> {
+  await ensureDatabase();
 }
 
 function createTables(): void {
